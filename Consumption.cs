@@ -73,9 +73,13 @@ namespace ConsumerApp {
                                                                                                                         p.PailNumber == pailStatus.PailNumber&&
                                                                                                                         p.Item == bomItem.Item).Count();
                                             if (checkConsumption == 0) {
+                                                int pailNumber = int.Parse(pailStatus.PailNumber);
                                                 var item = CreateConsupmtion(prodOrder);
                                                 item.SetBomDetails(bomItem);
-                                                session.Save(ConsumptionData(bomItem, prodOrder, pailStatus, poPailStatus.Count));
+                                                item.SetPailDetails(pailStatus);
+                                                item.ConsumptionItemQty(poPailStatus.Count, pailNumber, bomItem);
+                                                pailStatus.SavePailData();
+                                                session.Save(item);
                                             }
                                             
                                         });
@@ -147,92 +151,13 @@ namespace ConsumerApp {
             item.CreationDate = DateTime.Today;
             item.POID = productionOrder.POID;
             item.MaterialID = productionOrder.MaterialID;
-            //item.PailNumber = pailStatus.PailNumber;
-            //item.Item = bom.Item;
-            //item.ItemUom = bom.ItemQtyUOM;
-            //item.SetBomDetails(bom);
 
             item.ItemStorageLoc = "1";
-            //item.MPGStatus = pailStatus.MPGStatus;
-           // item.MESStatus = pailStatus.MESStatus;
-            //item.ErrorMessage = pailStatus.ErrorMessage;
             item.MPGRowUpdated = DateTime.Now;
-            //item.ItemQty = ConsumptionItemQty(pailCount, pailNumber, bom);
-
+            
             return item;
         }
 
-
-
-
-
-        public ProductionOrderConsumption ConsumptionData(ProductionOrderBom bom,
-                           ProductionOrder productionOrder,
-                           ProductionOrderPailStatus pailStatus,
-                           int pailCount) {
-
-            ProductionOrderConsumption consumption = new ProductionOrderConsumption();
-
-            consumption.ID = ID++;
-            consumption.CreationDate = DateTime.Today;
-            consumption.POID = productionOrder.POID;
-            consumption.MaterialID = productionOrder.MaterialID;
-            //consumption.PailNumber = pailStatus.PailNumber;
-            consumption.PailNumber = 
-            consumption.Item = bom.Item;
-            consumption.ItemStorageLoc = "1";
-            consumption.MPGStatus = pailStatus.MPGStatus;
-            consumption.MESStatus = pailStatus.MESStatus;
-            consumption.ErrorMessage = pailStatus.ErrorMessage;
-            consumption.MPGRowUpdated = DateTime.Now;
-
-            int pailNumber = int.Parse(pailStatus.PailNumber);
-
-            consumption.ItemQty = ConsumptionItemQty(pailCount, pailNumber,bom);
-            consumption.ItemUom = bom.ItemQtyUOM;
-            pailStatus.Timeout = "0";
-            pailStatus.EndDate = DateTime.Now;
-            pailStatus.NetWeight = GetNetWeight(pailStatus);
-            pailStatus.PailStatus = "PRLT";
-            pailStatus.MPGRowUpdated = DateTime.Now;
-
-            return consumption;
-        }
-        
-        public decimal GetNetWeight(ProductionOrderPailStatus pailStatus) {
-            return pailStatus.GrossWeight + (decimal)((double)pailStatus.GrossWeight * 0.01);
-        }
-
-        /// <summary>
-        /// Return item quantity for consumption data
-        /// </summary>
-        /// <param name="pailCount"></param>
-        /// <param name="pailNumber"></param>
-        /// <param name="bom"></param>
-        /// <returns></returns>
-        public decimal ConsumptionItemQty(int pailCount, int pailNumber, ProductionOrderBom bom) {
-
-            if ((bom.ItemQtyUOM == "BUC") && (bom.ItemQty != pailCount)) {
-                if (pailNumber == pailCount) {
-                    return bom.ItemQty;
-                }
-
-            } else {
-                double qty = (double)bom.ItemQty / pailCount;
-
-                if (bom.ItemQty == pailCount) {
-                    return (decimal)qty;
-                } else {
-                    /* add or subtract offset to item quantity */
-                    var offset = (qty >= 5) ? ((double)qty) * 0.01 : ((double)qty) * 0.1;
-                    var sign = _random.Next(0, 1);
-
-                    return (decimal)((sign == 1) ? (qty + offset) : (qty - offset));
-                }
-            }
-
-            return bom.ItemQty;
-        }
 
         /// <summary>
         /// Get all CMD and show in ListView 
