@@ -171,7 +171,7 @@ namespace ConsumerApp {
                     var productionOrder = session.Query<ProductionOrder>().ToList();
 
                     productionOrder.ForEach(prodOrder => {
-                        items.Add(new CMDListView() { POID = prodOrder.POID, Status = prodOrder.Status });
+                        items.Add(CMDListView.CreateFromPO(prodOrder));
                     });
                 }
             }
@@ -185,7 +185,7 @@ namespace ConsumerApp {
                 using (var transaction = session.BeginTransaction()) {
                     var pailStatus = session.Query<ProductionOrderPailStatus>().Where(p => p.POID == poid).ToList();
                     pailStatus.ForEach(pail => {
-                        items.Add(new PailListView() { PailNumber = pail.PailNumber, Status = pail.PailStatus });
+                        items.Add(PailListView.CreateFromPail(pail));
                     });
                 }
             }

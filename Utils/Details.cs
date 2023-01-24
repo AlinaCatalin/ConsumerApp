@@ -29,7 +29,7 @@ namespace ConsumerApp.Utils {
         /// <param name="pailNumber"></param>
         /// <param name="bom"></param>
         public static void ConsumptionItemQty(this ProductionOrderConsumption item, int pailCount, int pailNumber, ProductionOrderBom bom) {
-            Random _random = new Random();
+            Random _random = new();
 
             if ((bom.ItemQtyUOM == "BUC") && (bom.ItemQty != pailCount)) {
                 if (pailNumber == pailCount) {
